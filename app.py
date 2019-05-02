@@ -4,6 +4,7 @@ from flask import jsonify
 from flask_cors import CORS
 import csv
 
+DEBUG = True
 
 # def main():
 #     with open('./paastokansio/paastot.csv','r') as paastot:
@@ -82,46 +83,40 @@ def getCountries():
 
 @app.route('/getemissions', methods=['POST', 'GET'])
 def getData():
-        #d = request.form
-        #print(d)
-        #print(request.get_json())
         post_data = request.get_json()
         country  = post_data['country']
-        inputyear  = post_data['year']
-        checkbox  = post_data['perCapita']
+        #country  = "Finland"
         print(country )
         with open('./paastokansio/paastot.csv','r') as paastot, open('./vakilukukansio/vakiluku.csv','r') as vakiluvut:
                  readCSV = csv.reader(paastot, delimiter=',')
                  readVakiluvut = csv.reader(vakiluvut, delimiter=',')
-                 countries=[]
-                 data=[]
+                 emissions=[]
+                 years=[]
+                 results =[]
                  #loop trough rows in file
                  for row in readCSV:
                      numOfLines = readCSV.line_num
                      #We dont need the fist 4 lines
-                     #Line 5 is headers. get index of input year
+                     #Line 5 is headers
                      if numOfLines == 5:
-                         indexY = row.index(inputyear)
-                         year = row[indexY]
-                         #print(year)
-                         data.append(year)
+                         #read years to array
+                         years = (row[5:])
                      elif numOfLines > 5:
-                        #find selected country and co2emissions from selected year
+                        #find selected country and co2emissions
                         if row[0] == country:
-                            chosenCountry = row[0]
-                            data.append(chosenCountry)
-                            emissions = row[indexY]
-                            data.append(emissions)
-                            if checkbox == "show":
-                                capita= getPeople(indexY, country)
-                                print(capita)
-                                if emissions != "" and capita != "":
-                                    percapita = float(emissions) / float(capita)
-                                    print(percapita)
-                                    data.append(percapita)
-                                    print(data)
-                            print(country + " CO2 emissions in the year: " + inputyear)
-                            return jsonify({'data': data})
+                            emissions = (row[5:])
+                            #check how many times we have to loop
+                            loops = len(row[5:])
+                            #loop trough both arrays
+                            for i in range(loops):
+                                year = years[i]
+                                emission = emissions[i]
+                                # constructin result object
+                                result = {'year': year, 'emission': emission}
+                                #add resultobject to array
+                                results.append(result)
+                                print(result)
+                            return jsonify({'results': results})
 
 if __name__ == '__main__':
     app.run()
