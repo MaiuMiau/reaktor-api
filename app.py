@@ -44,42 +44,34 @@ app = Flask(__name__)
 app.config.from_object(__name__)
 CORS(app)
 
-#function to get pupulation based on country an year
-def getPeople(indexY, country):
-    print(indexY)
+#function to get pupulation array based on country
+def getPeople(country):
     print(country)
     with open('./vakilukukansio/vakiluku.csv','r') as vakiluvut:
              readCSV = csv.reader(vakiluvut, delimiter=',')
              for row in readCSV:
                  numOfLines = readCSV.line_num
-                 #first rows are not needet
+                 #first rows are not needed
                  if numOfLines > 5:
-                    #find selected country and population from selected year
+                    #find selected country and population row
                     if row[0] == country:
-                        result = row[indexY]
+                        result = row[5:]
                         print(result)
     return result
 
-# get coutry names and years to arrays so that they can be used
+# get coutry names to array so that they can be used
 # in frontend dropdown form
-@app.route('/getcountries')
+@app.route('/getcountries', methods=['GET'])
 def getCountries():
     with open('./paastokansio/paastot.csv','r') as paastot:
              readCSV = csv.reader(paastot, delimiter=',')
              countries=[]
-             data=[]
-             years=[]
              #loop trough rows in file
              for row in readCSV:
                  numOfLines = readCSV.line_num
-                 if numOfLines == 5:
-                    del row[0:4]
-                    row.reverse()
-                    del row[0:1]
-                    years.append(row)
-                 elif numOfLines > 5:
+                 if numOfLines > 5:
                      countries.append(row[0])
-    return jsonify({'countries': countries, 'years': years} )
+    return jsonify({'countries': countries} )
 
 @app.route('/getemissions', methods=['POST', 'GET'])
 def getData():
@@ -93,6 +85,8 @@ def getData():
                  emissions=[]
                  years=[]
                  results =[]
+                 population=[]
+                 population= getPeople(country)
                  #loop trough rows in file
                  for row in readCSV:
                      numOfLines = readCSV.line_num
@@ -111,8 +105,14 @@ def getData():
                             for i in range(loops):
                                 year = years[i]
                                 emission = emissions[i]
+                                people = population[i]
+                                if emission != '':
+                                    percapita = float(emission) / int(people)
+                                elif emission == '':
+                                    emission = '-'
+                                    percapita = 0.0
                                 # constructin result object
-                                result = {'year': year, 'emission': emission}
+                                result = {'year': year, 'emission': emission, 'percapita': percapita}
                                 #add resultobject to array
                                 results.append(result)
                                 print(result)
