@@ -46,7 +46,6 @@ CORS(app)
 
 #function to get pupulation array based on country
 def getPeople(country):
-    print(country)
     with open('./vakilukukansio/vakiluku.csv','r') as vakiluvut:
              readCSV = csv.reader(vakiluvut, delimiter=',')
              for row in readCSV:
@@ -55,8 +54,9 @@ def getPeople(country):
                  if numOfLines > 5:
                     #find selected country and population row
                     if row[0] == country:
-                        result = row[5:]
-                        print(result)
+                        result = row[4:]
+                        result = result[::-1]
+                        result = result[1:]
     return result
 
 # get coutry names to array so that they can be used
@@ -76,9 +76,8 @@ def getCountries():
 @app.route('/getemissions', methods=['POST', 'GET'])
 def getData():
         post_data = request.get_json()
+        print(post_data)
         country  = post_data['country']
-        #country  = "Finland"
-        print(country )
         with open('./paastokansio/paastot.csv','r') as paastot, open('./vakilukukansio/vakiluku.csv','r') as vakiluvut:
                  readCSV = csv.reader(paastot, delimiter=',')
                  readVakiluvut = csv.reader(vakiluvut, delimiter=',')
@@ -94,13 +93,17 @@ def getData():
                      #Line 5 is headers
                      if numOfLines == 5:
                          #read years to array
-                         years = (row[5:])
+                         years = row[4:]
+                         years = years[::-1]
+                         years = years[1:]
                      elif numOfLines > 5:
                         #find selected country and co2emissions
                         if row[0] == country:
-                            emissions = (row[5:])
+                            emissions = row[4:]
+                            emissions = emissions[::-1]
+                            emissions = emissions[1:]
                             #check how many times we have to loop
-                            loops = len(row[5:])
+                            loops = len(emissions)
                             #loop trough both arrays
                             for i in range(loops):
                                 year = years[i]
@@ -108,6 +111,7 @@ def getData():
                                 people = population[i]
                                 if emission != '':
                                     percapita = float(emission) / int(people)
+                                    percapita = format(percapita, ".5f")
                                 elif emission == '':
                                     emission = '-'
                                     percapita = 0.0
@@ -115,7 +119,6 @@ def getData():
                                 result = {'year': year, 'emission': emission, 'percapita': percapita}
                                 #add resultobject to array
                                 results.append(result)
-                                print(result)
                             return jsonify({'results': results})
 
 if __name__ == '__main__':
