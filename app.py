@@ -119,7 +119,9 @@ def getData():
                                 result = {'year': year, 'emission': emission, 'percapita': percapita}
                                 #add resultobject to array
                                 results.append(result)
-                            return jsonify({'results': results})
+                            years.reverse()
+                            emissions.reverse()
+                            return jsonify({'results': results, 'years': years, 'emissons': emissions})
 
 if __name__ == '__main__':
     app.run()
