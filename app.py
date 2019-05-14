@@ -4,7 +4,7 @@ from flask import jsonify
 from flask_cors import CORS
 import csv
 
-DEBUG = True
+#DEBUG = True
 
 app = Flask(__name__)
 app.config.from_object(__name__)
